@@ -1,13 +1,14 @@
 import { CalorieProgress } from '@/components/dashboard/CalorieProgress'
 import { MacroCard } from '@/components/dashboard/MacroCard'
 import { QuickActions } from '@/components/dashboard/QuickActions'
-import { auth, authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import { TodaysMeals } from '@/components/dashboard/TodaysMeal'
+import { auth } from '@/lib/auth'
+import { getTodaysFoodLogs } from '@/server/actions/food/get-todays-logs'
 import { getUserProfile } from '@/server/actions/Profile/get-profile'
+import { redirect } from 'next/navigation'
 
 export default async function DashboardPage() {
-    const session = await auth();
+    const session = await auth()
 
     if (!session?.user?.id) {
         redirect('/login')
@@ -21,11 +22,36 @@ export default async function DashboardPage() {
 
     const profile = profileResult.profile
 
-    // TODO: Get today's food logs - for now using mock data
-    const todayCalories = 0 // Will be replaced with real data
-    const todayProtein = 0
-    const todayCarbs = 0
-    const todayFats = 0
+    // Get today's food logs - REAL DATA!
+    const logsResult = await getTodaysFoodLogs(session.user.id)
+    if (!logsResult.success || !logsResult.totals || !logsResult.logs) {
+        redirect('/dashboard')
+    }
+    const { totals, logs } = logsResult
+
+    // Group logs by meal type
+    const mealGroups = {
+        breakfast: logs.filter((log: any) => log.mealType === 'breakfast'),
+        lunch: logs.filter((log: any) => log.mealType === 'lunch'),
+        dinner: logs.filter((log: any) => log.mealType === 'dinner'),
+        snack: logs.filter((log: any) => log.mealType === 'snack'),
+    }
+
+    // Convert to meals array for component
+    const meals = Object.entries(mealGroups)
+        .filter(([_, items]) => items.length > 0)
+        .map(([type, items]: [string, any[]]) => {
+            const mealCalories = items.reduce((sum, item) => {
+                return sum + (item.food ? item.food.calories * item.servings : 0)
+            }, 0)
+
+            return {
+                id: type,
+                type,
+                items: items.length,
+                calories: Math.round(mealCalories),
+            }
+        })
 
     return (
         <div className="space-y-6">
@@ -42,30 +68,30 @@ export default async function DashboardPage() {
                 </p>
             </div>
 
-            {/* Calorie Progress - NOW USING REAL DATA */}
+            {/* Calorie Progress - REAL DATA */}
             <CalorieProgress
-                current={todayCalories}
+                current={totals.calories}
                 target={profile.targetCalories}
             />
 
-            {/* Macros - NOW USING REAL DATA */}
+            {/* Macros - REAL DATA */}
             <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
                 <h3 className="font-bold text-gray-900">Macros</h3>
                 <MacroCard
                     label="Protein"
-                    current={todayProtein}
+                    current={totals.protein}
                     target={profile.targetProtein}
                     color="green"
                 />
                 <MacroCard
                     label="Carbs"
-                    current={todayCarbs}
+                    current={totals.carbs}
                     target={profile.targetCarbs}
                     color="blue"
                 />
                 <MacroCard
                     label="Fats"
-                    current={todayFats}
+                    current={totals.fats}
                     target={profile.targetFats}
                     color="orange"
                 />
@@ -74,9 +100,9 @@ export default async function DashboardPage() {
             {/* Quick Actions */}
             <QuickActions />
 
-            {/* Today's Meals */}
+            {/* Today's Meals - REAL DATA */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <TodaysMeals meals={[]} />
+                <TodaysMeals meals={meals} />
             </div>
 
             {/* Goal Info */}
@@ -99,17 +125,19 @@ export default async function DashboardPage() {
             </div>
 
             {/* Tip Card */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
-                <div className="flex items-start gap-3">
-                    <span className="text-2xl">💡</span>
-                    <div>
-                        <h4 className="font-semibold text-gray-900 mb-1">Daily Tip</h4>
-                        <p className="text-sm text-gray-700">
-                            Start logging your meals to see your progress! Aim to hit your protein target first.
-                        </p>
+            {totals.calories === 0 && (
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
+                    <div className="flex items-start gap-3">
+                        <span className="text-2xl">💡</span>
+                        <div>
+                            <h4 className="font-semibold text-gray-900 mb-1">Get Started!</h4>
+                            <p className="text-sm text-gray-700">
+                                Click "Log Meal" to start tracking your food. Try logging your breakfast first!
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     )
 }

@@ -61,7 +61,7 @@ const FoodSchema = new Schema<IFood>(
         barcode: {
             type: String,
             unique: true,
-            sparse: true, // Allows null values with unique index
+            sparse: true,
         },
         verified: {
             type: Boolean,

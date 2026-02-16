@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 interface Meal {
     id: string
     type: string
@@ -21,28 +23,32 @@ export function TodaysMeals({ meals }: TodaysMealsProps) {
 
                     if (meal) {
                         return (
-                            <div
+                            <Link
                                 key={type}
-                                className="p-4 bg-gray-50 rounded-lg flex justify-between items-center"
+                                href={`/food/add?meal=${type}`}
+                                className="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                             >
-                                <div>
-                                    <p className="font-semibold text-gray-800 capitalize">{type}</p>
-                                    <p className="text-sm text-gray-600">
-                                        {meal.calories} cal • {meal.items} items
-                                    </p>
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="font-semibold text-gray-800 capitalize">{type}</p>
+                                        <p className="text-sm text-gray-600">
+                                            {meal.calories} cal • {meal.items} {meal.items === 1 ? 'item' : 'items'}
+                                        </p>
+                                    </div>
+                                    <span className="text-green-600 text-xl">✓</span>
                                 </div>
-                                <span className="text-green-600 text-xl">✓</span>
-                            </div>
+                            </Link>
                         )
                     }
 
                     return (
-                        <div
+                        <Link
                             key={type}
-                            className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500 hover:border-green-500 hover:text-green-600 cursor-pointer transition-colors"
+                            href={`/food/add?meal=${type}`}
+                            className="block p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500 hover:border-green-500 hover:text-green-600 cursor-pointer transition-colors"
                         >
                             + Add {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </div>
+                        </Link>
                     )
                 })}
             </div>
