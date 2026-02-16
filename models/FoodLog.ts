@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose'
+// Import Food model to ensure it's registered before FoodLog schema references it
+import '@/models/Food'
 
 export interface IFoodLog extends Document {
     userId: mongoose.Types.ObjectId

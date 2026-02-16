@@ -1,45 +1,17 @@
 import mongoose, { Schema, Document, Model } from 'mongoose'
 
-interface Meal {
-    name: string
-    calories: number
-    protein: number
-    carbs: number
-    fats: number
-    ingredients: string[]
-    instructions?: string
-}
-
-interface DayMeals {
-    breakfast: Meal
-    lunch: Meal
-    dinner: Meal
-    snacks?: Meal[]
-}
-
 export interface IMealPlan extends Document {
+    _id: mongoose.Types.ObjectId
     userId: mongoose.Types.ObjectId
     name?: string
     startDate: Date
     endDate: Date
-    meals: {
-        [key: string]: DayMeals // monday, tuesday, etc.
-    }
+    meals: any // Complex nested structure
     isActive: boolean
     generatedByAI: boolean
     createdAt: Date
     updatedAt: Date
 }
-
-const MealSchema = new Schema({
-    name: { type: String, required: true },
-    calories: { type: Number, required: true },
-    protein: { type: Number, required: true },
-    carbs: { type: Number, required: true },
-    fats: { type: Number, required: true },
-    ingredients: [{ type: String }],
-    instructions: { type: String },
-}, { _id: false })
 
 const MealPlanSchema = new Schema<IMealPlan>(
     {
@@ -50,6 +22,7 @@ const MealPlanSchema = new Schema<IMealPlan>(
         },
         name: {
             type: String,
+            default: 'My Meal Plan',
         },
         startDate: {
             type: Date,
@@ -78,6 +51,7 @@ const MealPlanSchema = new Schema<IMealPlan>(
 )
 
 MealPlanSchema.index({ userId: 1, isActive: 1 })
+MealPlanSchema.index({ userId: 1, startDate: -1 })
 
 const MealPlan: Model<IMealPlan> =
     mongoose.models.MealPlan || mongoose.model<IMealPlan>('MealPlan', MealPlanSchema)

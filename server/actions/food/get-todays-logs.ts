@@ -1,9 +1,10 @@
 'use server'
 
 import dbConnect from '@/lib/mongodb'
-import FoodLog from '@/models/FoodLog'
 import { Types } from 'mongoose'
 import { startOfDay, endOfDay } from 'date-fns'
+// Food model is imported in FoodLog.ts to ensure it's registered for populate
+import FoodLog from '@/models/FoodLog'
 
 export async function getTodaysFoodLogs(userId: string) {
     try {
