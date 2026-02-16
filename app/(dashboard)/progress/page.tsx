@@ -1,16 +1,31 @@
-export default function ProgressPage() {
+import { auth } from '@/lib/auth'
+import { getUserProfile } from '@/server/actions/Profile/get-profile';
+import { getWeightLogs } from '@/server/actions/progress/get-weight-log';
+import { redirect } from 'next/navigation'
+import { ProgressView } from './ProgressView';
+
+
+export default async function ProgressPage() {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+        redirect('/login')
+    }
+
+    const profileResult = await getUserProfile(session.user.id)
+
+    if (!profileResult.success || !profileResult.profile) {
+        redirect('/onboarding')
+    }
+
+    const profile = profileResult.profile
+    const weightLogsResult = await getWeightLogs(session.user.id, 90)
+
     return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Progress</h2>
-            <div className="bg-white rounded-2xl p-12 text-center">
-                <p className="text-4xl mb-4">📊</p>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Progress Tracking
-                </h3>
-                <p className="text-gray-600">
-                    Coming soon! Track your weight, measurements, and progress photos.
-                </p>
-            </div>
-        </div>
+        <ProgressView
+            userId={session.user.id}
+            profile={profile}
+            weightLogs={weightLogsResult.logs}
+        />
     )
 }

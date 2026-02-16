@@ -5,6 +5,7 @@ import { TodaysMeals } from '@/components/dashboard/TodaysMeal'
 import { auth } from '@/lib/auth'
 import { getTodaysFoodLogs } from '@/server/actions/food/get-todays-logs'
 import { getUserProfile } from '@/server/actions/Profile/get-profile'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 export default async function DashboardPage() {
@@ -106,10 +107,11 @@ export default async function DashboardPage() {
             </div>
 
             {/* Goal Info */}
+            {/* Goal Info */}
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
                 <div className="flex items-start gap-3">
                     <span className="text-2xl">🎯</span>
-                    <div>
+                    <div className="flex-1">
                         <h4 className="font-semibold text-gray-900 mb-1">Your Goal</h4>
                         <p className="text-sm text-gray-700">
                             {profile.goalType === 'lose_weight' && 'Lose weight - '}
@@ -120,6 +122,9 @@ export default async function DashboardPage() {
                         <p className="text-xs text-gray-600 mt-1">
                             Daily calories: {profile.targetCalories} | TDEE: {profile.tdee}
                         </p>
+                        <Link href="/progress" className="text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 inline-block">
+                            View Progress →
+                        </Link>
                     </div>
                 </div>
             </div>
