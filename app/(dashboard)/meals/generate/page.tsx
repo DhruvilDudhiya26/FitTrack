@@ -1,17 +1,36 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useUser } from '@/hooks/use-user'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { generateAIMealPlan } from '@/server/actions/meals/generate-plan'
+import { getActiveMealPlan } from '@/server/actions/meals/get-active-plan'
 
 export default function GenerateMealPlanPage() {
     const router = useRouter()
     const { user } = useUser()
     const [isGenerating, setIsGenerating] = useState(false)
     const [error, setError] = useState('')
+    const [isChecking, setIsChecking] = useState(true)
+
+    // Check if meal plan already exists on mount
+    useEffect(() => {
+        async function checkExistingPlan() {
+            if (!user?.id) return
+
+            const result = await getActiveMealPlan(user.id)
+            if (result.success && result.mealPlan) {
+                // Redirect to meals page if plan exists
+                router.push('/meals')
+                return
+            }
+            setIsChecking(false)
+        }
+        checkExistingPlan()
+    }, [user?.id, router])
 
     const handleGenerate = async () => {
         if (!user?.id) return
@@ -35,6 +54,18 @@ export default function GenerateMealPlanPage() {
             setError('Something went wrong. Please try again.')
             setIsGenerating(false)
         }
+    }
+
+    // Show loading while checking for existing plan
+    if (isChecking) {
+        return (
+            <div className="max-w-2xl mx-auto space-y-6">
+                <div className="bg-white rounded-2xl p-12 text-center">
+                    <div className="animate-spin text-4xl mb-4">⏳</div>
+                    <p className="text-gray-600">Checking for existing meal plan...</p>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -99,6 +130,14 @@ export default function GenerateMealPlanPage() {
                             '✨ Generate My Meal Plan'
                         )}
                     </Button>
+
+                    <div className="text-center">
+                        <Link href="/meals">
+                            <Button variant="outline" className="w-full">
+                                ← Back to Meal Plans
+                            </Button>
+                        </Link>
+                    </div>
 
                     <p className="text-xs text-gray-500">
                         Note: Generation takes 30-60 seconds. Please be patient!
