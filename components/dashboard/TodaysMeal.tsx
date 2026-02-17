@@ -16,7 +16,12 @@ export function TodaysMeals({ meals }: TodaysMealsProps) {
 
     return (
         <div>
-            <h3 className="font-bold text-gray-800 mb-3">Today's Meals</h3>
+            <div className="flex justify-between items-center mb-3">
+                <h3 className="font-bold text-gray-800">Today's Meals</h3>
+                <Link href="/food/logs" className="text-sm text-green-600 hover:text-green-700 font-medium">
+                    View All →
+                </Link>
+            </div>
             <div className="space-y-2">
                 {mealTypes.map((type) => {
                     const meal = meals.find((m) => m.type.toLowerCase() === type)
@@ -25,7 +30,7 @@ export function TodaysMeals({ meals }: TodaysMealsProps) {
                         return (
                             <Link
                                 key={type}
-                                href={`/food/add?meal=${type}`}
+                                href="/food/logs"
                                 className="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                             >
                                 <div className="flex justify-between items-center">

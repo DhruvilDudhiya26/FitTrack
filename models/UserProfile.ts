@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose'
 export interface IUserProfile extends Document {
     userId: mongoose.Types.ObjectId
     age: number
-    gender: string
+    gender: 'male' | 'female' | 'other'
     currentWeight: number
     targetWeight: number
     height: number

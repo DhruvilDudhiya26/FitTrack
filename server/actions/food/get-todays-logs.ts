@@ -1,49 +1,51 @@
 'use server'
 
 import dbConnect from '@/lib/mongodb'
+import FoodLog from '@/models/FoodLog'
+import Food from '@/models/Food'
 import { Types } from 'mongoose'
 import { startOfDay, endOfDay } from 'date-fns'
-// Food model is imported in FoodLog.ts to ensure it's registered for populate
-import FoodLog from '@/models/FoodLog'
 
-export async function getTodaysFoodLogs(userId: string) {
+export async function getTodaysLogs(userId: string) {
     try {
         await dbConnect()
 
         const today = new Date()
-        const startDate = startOfDay(today)
-        const endDate = endOfDay(today)
 
         const foodLogs = await FoodLog.find({
             userId: new Types.ObjectId(userId),
             loggedAt: {
-                $gte: startDate,
-                $lte: endDate,
+                $gte: startOfDay(today),
+                $lte: endOfDay(today),
             },
         })
-            .populate('foodId')
-            .sort({ loggedAt: -1 })
+            .sort({ loggedAt: 1 })
             .lean()
 
-        // Calculate totals
+        const logsWithFood = await Promise.all(
+            foodLogs.map(async (log) => {
+                const food = await Food.findById(log.foodId).lean()
+                return { ...log, food }
+            })
+        )
+
         let totalCalories = 0
         let totalProtein = 0
         let totalCarbs = 0
         let totalFats = 0
 
-        foodLogs.forEach((log: any) => {
-            const food = log.foodId
-            if (food) {
-                totalCalories += food.calories * log.servings
-                totalProtein += food.protein * log.servings
-                totalCarbs += food.carbs * log.servings
-                totalFats += food.fats * log.servings
+        logsWithFood.forEach((log) => {
+            if (log.food) {
+                totalCalories += log.food.calories * log.servings
+                totalProtein += log.food.protein * log.servings
+                totalCarbs += log.food.carbs * log.servings
+                totalFats += log.food.fats * log.servings
             }
         })
 
         return {
             success: true,
-            logs: JSON.parse(JSON.stringify(foodLogs)),
+            logs: JSON.parse(JSON.stringify(logsWithFood)),
             totals: {
                 calories: Math.round(totalCalories),
                 protein: Math.round(totalProtein),
@@ -55,7 +57,8 @@ export async function getTodaysFoodLogs(userId: string) {
         console.error('Error getting food logs:', error)
         return {
             success: false,
-            error: 'Failed to get food logs',
+            logs: [],
+            totals: { calories: 0, protein: 0, carbs: 0, fats: 0 },
         }
     }
 }

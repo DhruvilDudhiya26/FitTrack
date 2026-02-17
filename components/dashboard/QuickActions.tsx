@@ -10,10 +10,10 @@ export function QuickActions() {
                     <span className="font-semibold">Log Meal</span>
                 </Button>
             </Link>
-            <Link href="/coach">
+            <Link href="/food/logs">
                 <Button className="w-full h-24 flex flex-col gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-2 border-blue-200">
-                    <span className="text-3xl">💬</span>
-                    <span className="font-semibold">AI Coach</span>
+                    <span className="text-3xl">📋</span>
+                    <span className="font-semibold">View Logs</span>
                 </Button>
             </Link>
         </div>

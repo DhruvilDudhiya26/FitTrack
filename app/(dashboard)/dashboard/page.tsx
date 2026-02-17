@@ -3,7 +3,7 @@ import { MacroCard } from '@/components/dashboard/MacroCard'
 import { QuickActions } from '@/components/dashboard/QuickActions'
 import { TodaysMeals } from '@/components/dashboard/TodaysMeal'
 import { auth } from '@/lib/auth'
-import { getTodaysFoodLogs } from '@/server/actions/food/get-todays-logs'
+import { getTodaysLogs } from '@/server/actions/food/get-todays-logs'
 import { getUserProfile } from '@/server/actions/Profile/get-profile'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -24,7 +24,7 @@ export default async function DashboardPage() {
     const profile = profileResult.profile
 
     // Get today's food logs - REAL DATA!
-    const logsResult = await getTodaysFoodLogs(session.user.id)
+    const logsResult = await getTodaysLogs(session.user.id)
     if (!logsResult.success || !logsResult.totals || !logsResult.logs) {
         redirect('/dashboard')
     }
