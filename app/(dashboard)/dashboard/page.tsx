@@ -2,14 +2,18 @@ import { CalorieProgress } from '@/components/dashboard/CalorieProgress'
 import { MacroCard } from '@/components/dashboard/MacroCard'
 import { QuickActions } from '@/components/dashboard/QuickActions'
 import { TodaysMeals } from '@/components/dashboard/TodaysMeal'
+import { WaterTracker } from '@/components/dashboard/WaterTracker'
 import { auth } from '@/lib/auth'
 import { getTodaysLogs } from '@/server/actions/food/get-todays-logs'
 import { getUserProfile } from '@/server/actions/Profile/get-profile'
+import { getTodaysWater } from '@/server/actions/water/log-water'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 export default async function DashboardPage() {
     const session = await auth()
+
+    const waterResult = await getTodaysWater(session?.user?.id)
 
     if (!session?.user?.id) {
         redirect('/login')
@@ -100,6 +104,13 @@ export default async function DashboardPage() {
 
             {/* Quick Actions */}
             <QuickActions />
+
+            {/* Water Tracker */}
+            <WaterTracker
+                userId={session.user.id}
+                initialGlasses={waterResult.glasses}
+                goal={8}
+            />
 
             {/* Today's Meals - REAL DATA */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
